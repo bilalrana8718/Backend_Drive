@@ -1,9 +1,10 @@
-
-
 const express = require("express");
 const morgan = require('morgan');
 const userRouter = require('./routes/user.routes');
 const { body, validationResult } = require('express-validator');
+const dotenv = require('dotenv');
+
+dotenv.config();
 const app = express();
 
 app.use(express.json()); // JSON request logger
