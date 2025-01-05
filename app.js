@@ -14,8 +14,6 @@ const app = express();
 app.use(express.json()); // JSON request logger
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(cookieParser());
-
-
 app.use(morgan('combined'));
 
 app.set('view engine', 'ejs');
