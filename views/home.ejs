@@ -6,64 +6,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-  <title>File Upload</title>
+  <title>Drive Storage</title>
 </head>
 
-<body class="bg-gray-700 text-gray-900 min-h-screen flex items-center justify-center">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col ">
 
-<main class="relative w-full max-w-md p-6 text-center">
+  <!-- Header -->
+  <header class="bg-gray-800 shadow-md py-4">
+    <div class="container mx-auto flex items-center justify-between px-4">
+      <h1 class="text-lg font-bold text-white">My Drive</h1>
+      <nav class="flex gap-4">
+        <a href="/" class="text-gray-400 hover:text-white">Home</a>
+        <a href="/users/logout" class="text-gray-400 hover:text-white">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <!-- Uploaded Files -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold text-white mb-4">Uploaded Files</h2>
+      <div class="space-y-4">
+        <% if (files.length) { %>
+          <% for (let file of files) { %>
+            <div class="flex justify-between items-center bg-gray-800 rounded-lg p-4 shadow hover:shadow-lg">
+              <span class="text-gray-300"><%= file.originalname %></span>
+              <a href="/index/download/<%= encodeURIComponent(file.path) %>" class="text-blue-500 hover:text-blue-700">
+                <i class="ri-download-line">Download</i>
+              </a>
+            </div>
+          <% } %>
+        <% } else { %>
+          <p class="text-gray-500">No files uploaded yet.</p>
+        <% } %>
+      </div>
+    </section>
+
     <!-- Upload Button -->
     <button onclick="showPopUp()"
-        class="relative inline-flex items-center justify-center p-0.5 mb-6 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800">
-        <span
-            class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-            Upload File
-        </span>
+      class="w-full py-3 text-sm font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700">
+      Upload New File
     </button>
+  </main>
 
-    <!-- File Upload Pop-Up -->
-    <div class="pop hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-11/12 max-w-lg">
-            <h2 class="mb-4 text-lg font-semibold text-gray-700 dark:text-white">Upload Your File</h2>
-            <form action="/index/upload" method="post" enctype="multipart/form-data">
-                <label for="dropzone-file"
-                    class="flex flex-col items-center justify-center h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500">
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                        <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
-                        </svg>
-                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to
-                                upload</span> or drag and drop</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-                    </div>
-                    <input id="dropzone-file" type="file" class="hidden" name="file" />
-                </label>
-                <div class="mt-4 flex justify-end gap-4">
-                    <button type="button" onclick="hidePopUp()"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none">
-                        Upload
-                    </button>
-                </div>
-            </form>
+  <!-- File Upload Pop-Up -->
+  <div class="pop hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-11/12 max-w-lg">
+      <h2 class="text-lg font-semibold text-white mb-4">Upload Your File</h2>
+      <form action="/index/upload" method="post" enctype="multipart/form-data">
+        <label for="dropzone-file"
+          class="flex flex-col items-center justify-center h-48 border-2 border-dashed rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer">
+          <div class="text-center">
+            <svg class="w-8 h-8 mb-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+            </svg>
+            <p class="text-sm text-gray-400">Click to upload or drag and drop</p>
+            <p class="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+          </div>
+          <input id="dropzone-file" type="file" class="hidden" name="file" />
+        </label>
+        <div class="mt-4 flex justify-end gap-4">
+          <button type="button" onclick="hidePopUp()"
+            class="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-700 rounded-lg hover:bg-gray-600">
+            Cancel
+          </button>
+          <button type="submit"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+            Upload
+          </button>
         </div>
+      </form>
     </div>
-</main>
+  </div>
 
+  
   <script>
-    function showPopUp() {
-      document.querySelector('.pop').classList.remove('hidden');
-    }
-    function hidePopUp() {
-      document.querySelector('.pop').classList.add('hidden');
-    }
-  </script>
+      function showPopUp() {
+          document.querySelector('.pop').classList.remove('hidden');
+        }
+        function hidePopUp() {
+            document.querySelector('.pop').classList.add('hidden');
+        }
+        </script>
 
 </body>
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-auto">
+  <div class="container mx-auto text-center text-gray-400 text-sm">
+    &copy; 2025 My Drive. All Rights Reserved.
+  </div>
+</footer>
 
 </html>

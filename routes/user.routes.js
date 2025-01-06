@@ -75,9 +75,13 @@ router.post('/login',
         )
 
         res.cookie('token', token);
-        res.send("token is valid");
+        res.redirect('/index/home');
 
     });
 
+router.get('/logout', (req, res) => {
+    res.clearCookie('token');
+    res.redirect('/users/login');
+});
 
 module.exports = router

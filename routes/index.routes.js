@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const cloudinary = require('cloudinary').v2;
 const upload = require('../config/multer.config');
+const fileModel = require('../models/files.model');
+const axios = require('axios');
+
+// Middleware
+const authMiddleware = require('../middlewares/authe');
+
 require('dotenv').config();
 
 const streamifier = require('streamifier'); // For creating a stream from a buffer
@@ -13,26 +19,13 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-router.get('/home',(req, res) => {
-    res.render('home');
+router.get('/home', authMiddleware ,async (req, res) => {
+    // Get all files for the current user
+    const files = await fileModel.find({ userId: req.user.userId });
+    res.render('home', { files });
 });
 
-// Route for File Upload
-// router.post('/upload', upload.single('file'), async (req, res) => {
-//     try {
-//         if (!req.file) {
-//             return res.status(400).send('No file uploaded');
-//         }
-        
-//         console.log(req.file.buffer);
-
-//     } catch (err) {
-//         res.status(500).send('An error occurred during the upload process');
-//     }
-// });
-
-
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', authMiddleware, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -51,14 +44,45 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             stream.pipe(uploadStream);
         });
 
-        // Respond with the file URL
-        res.status(200).json({ url: result.secure_url });
+        const newFile = await fileModel.create({
+            originalname: req.file.originalname,
+            path: result.secure_url,
+            userId: req.user.userId,
+        })
+
+        res.status(200).json({newFile: newFile});
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'An error occurred during the upload process' });
     }
+
 });
 
+router.get('/download/:path', authMiddleware, async (req, res) => {
 
+    const userID = req.user.userId;
+    const filePath = decodeURIComponent(req.params.path);
+
+    console.log(filePath);
+    
+    const file = await fileModel.findOne({
+        userId: userID,
+        path: filePath
+    });
+
+    if (!file) {
+        return res.status(404).json({ error: 'File not found' });
+    }
+
+    // Fetch and stream the file using axios
+    const response = await axios({
+        method: 'get',
+        url: filePath,
+        responseType: 'stream',
+    });
+
+    response.data.pipe(res);
+});
 
 module.exports = router
