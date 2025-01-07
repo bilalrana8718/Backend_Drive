@@ -19,7 +19,7 @@ app.use(morgan('combined'));
 app.set('view engine', 'ejs');
 
 app.get("/", (req, res) => {
-    res.render('index');
+    res.render('login');
 })
 
 app.use('/users', userRouter);

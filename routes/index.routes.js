@@ -19,10 +19,16 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-router.get('/home', authMiddleware ,async (req, res) => {
-    // Get all files for the current user
-    const files = await fileModel.find({ userId: req.user.userId });
-    res.render('home', { files });
+router.get('/home', authMiddleware, async (req, res) => {
+    try {
+        // Get all files for the current user
+        const files = await fileModel.find({ userId: req.user.userId });
+        res.render('home', { files });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while fetching files' });
+    }
 });
 
 router.post('/upload', authMiddleware, upload.single('file'), async (req, res) => {
@@ -61,28 +67,35 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req, res) =
 
 router.get('/download/:path', authMiddleware, async (req, res) => {
 
-    const userID = req.user.userId;
-    const filePath = decodeURIComponent(req.params.path);
+    try {
 
-    console.log(filePath);
-    
-    const file = await fileModel.findOne({
-        userId: userID,
-        path: filePath
-    });
+        const userID = req.user.userId;
+        const filePath = decodeURIComponent(req.params.path);
 
-    if (!file) {
-        return res.status(404).json({ error: 'File not found' });
+        console.log(filePath);
+
+        const file = await fileModel.findOne({
+            userId: userID,
+            path: filePath
+        });
+
+        if (!file) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        // Fetch and stream the file using axios
+        const response = await axios({
+            method: 'get',
+            url: filePath,
+            responseType: 'stream',
+        });
+
+        response.data.pipe(res);
     }
-
-    // Fetch and stream the file using axios
-    const response = await axios({
-        method: 'get',
-        url: filePath,
-        responseType: 'stream',
-    });
-
-    response.data.pipe(res);
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred during the download process' });
+    }
 });
 
 module.exports = router
